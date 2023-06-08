@@ -15,23 +15,109 @@ from scipy import stats
 import datetime
 import glob
 #%% functions
-def get_filenames(site):
+def get_filenames(dn, site):
     """Get the data filename(s) for the site
+    
+    Parameters
+    ----------
+    dn : string
+         Path for Canadian mercury files
+    site : string
+         Site code
+    """
+    
+    if site=='ALT':
+        fn = [dn + 'AtmosphericGases-TGM-CAMNET-NU_Alert-*.csv', # before 2009
+              dn + 'AtmosphericGases-TGM-ECCC_AQRD-NU_Alert-*.csv'] # after 2010
+    elif site=='BRL':
+        fn = [dn + 'AtmosphericGases-TGM-CAMNET-SK_BrattsLake-*.csv', # before 2008
+              dn + 'AtmosphericGases-TGM-CAPMoN-SK_BrattsLake-*.csv', # 2009-2010
+              dn + 'AtmosphericGases-TGM-CAPMoN-AllSites-*.csv'] # 2008, after 2011       
+    elif site=='BNT':
+        fn = [dn + 'AtmosphericGases-TGM-CAMNET-ON_BurntIsland-*.csv']
+    elif site=='DEL':
+        fn = [dn + 'AtmosphericGases-TGM-CAMNET-BC_Delta-*.csv']   
+    elif site=='EGB':
+        fn = [dn + 'AtmosphericGases-TGM-CAMNET-ON_Egbert-*.csv', 
+              dn + 'AtmosphericGases-TGM-CAPMoN-AllSites-*.csv',
+              dn + 'AtmosphericGases-TGM-CAPMoN-ON_Egbert-*.csv']
+    elif site=='EST':
+        fn = [dn + 'AtmosphericGases-TGM-CAMNET-AB_Esther-*.csv']   
+    elif site=='FLN':
+        fn = [dn + 'AtmosphericGases-TGM-ECCC_PNR-MB_FlinFlon-*.csv']
+    elif site=='STA':
+        fn = [dn + 'AtmosphericGases-TGM-CAMNET-NB_HuntsmanScienceCenter-*.csv']
+    elif site=='KEJ':
+        fn = [dn + 'AtmosphericGases-TGM-CAMNET-NS_Kejimkujik-*.csv', 
+              dn + 'AtmosphericGases-TGM-CAPMoN-AllSites-*.csv',
+              dn + 'AtmosphericGases-TGM-CAPMoN-NS_Kejimkujik-*.csv']  
+    elif site=='LFL':
+        fn = [dn + 'AtmosphericGases-TGM-ECCC_AQRD-YT_LittleFoxLake-*.csv']
+    elif site=='WBT':
+        fn = [dn + 'AtmosphericGases-TGM-CAMNET-PQ_Mingan-*.csv']
+    elif site=='FTM':
+        fn = [dn + 'AtmosphericGases-TGM-ECCC_PNR-AB_FtMcMurray-*.csv']
+    elif site=='PPT':
+        fn = [dn + 'AtmosphericGases-TGM-CAMNET-ON_PointPetre-*.csv']
+    elif site=='SAT':
+        fn = [dn + 'AtmosphericGases-TGM-CAPMoN-BC_Saturna-*.csv', 
+              dn + 'AtmosphericGases-TGM-CAPMoN-AllSites-*.csv'] 
+    elif site=='PEI':
+        fn = [dn + 'AtmosphericGases-TGM-CAMNET-PE_Southampton-*.csv'] 
+    elif site=='WBZ':
+        fn = [dn + 'AtmosphericGases-TGM-CAMNET-PQ_StAnicet-*.csv'] 
+    elif site=='YGW':
+        fn = [dn + 'AtmosphericGases-TGM-CAMNET-PQ_Mingan-*.csv']
+    else:
+        fn = ['']
+    return fn
+
+def get_sitecodes(site):
+    """Get the options for sitecode(s) for the site
     
     Parameters
     ----------
     site : string
          Site code
     """
-    #dn = '../../obs_datasets/CAPMON/' # directory name - CHANGE TO YOUR RELATIVE PATH
-    dn = '/Users/arifeinberg/Documents/Postdoc_MIT/datasets/CAPMON_Conc/' # directory name - CHANGE TO YOUR RELATIVE PATH
     
     if site=='ALT':
-        fn = [dn + 'AtmosphericGases-TGM-CAMNET-NU_Alert-*.csv', # before 2009
-              dn + 'AtmosphericGases-TGM-ECCC_AQRD-NU_Alert-*.csv'] # after 2010
+        sitecodes = ['CAMNCANU1ALT', 'CAMNCANUALT']
+    elif site=='BRL':
+        sitecodes = ['CAMNCASK1BRL','CAPMCASKBRL','CAPMCASK1BRA']
+    elif site=='BNT':
+        sitecodes = ['CAMNCAON1BNT']
+    elif site=='DEL':
+        sitecodes = ['CAMNCABC1DEL']
+    elif site=='EGB':
+        sitecodes = ['CAMNCAON1EGB','CAPMCAON1EGB','CAPMCAONEGB','CAPMCAON2EGB']
+    elif site=='EST':
+        sitecodes = ['CAMNCAAB1EST']   
+    elif site=='FLN':
+        sitecodes = ['FLIN_FLON']
+    elif site=='PPT':
+        sitecodes = ['CAMNCAON1PPT']
+    elif site=='STA':
+        sitecodes = ['CAMNCANB1STA']
+    elif site=='KEJ':
+        sitecodes = ['CAMNCANS1KEJ','CAPMCANS1KEJ','CAPMCANSKEJ','CAPMCANS1KEB']
+    elif site=='LFL':
+        sitecodes = ['NCPCAYT1LFL']
+    elif site=='WBT':
+        sitecodes = ['CAMNCAPQ1WBT']
+    elif site=='FTM':
+        sitecodes = ['FT_MCMURRAY']        
+    elif site=='SAT':
+        sitecodes = ['CAPMCABC1SAT','CAPMCABCSAT']        
+    elif site=='PEI':
+        sitecodes = ['CAMNCAPE1PEI']        
+    elif site=='WBZ':
+        sitecodes = ['CAMNCAPQ1WBZ']        
+    elif site=='YGW':
+        sitecodes = ['CAMNCAPQ1YGW']        
     else:
-        fn = ['']
-    return fn
+        sitecodes = ['']
+    return sitecodes
 
 def find_header_line(fn):
     """Find line number of header in a data file
@@ -114,11 +200,14 @@ def fix_column_names(colnames):
                  'Date start: local time',
                  'Date end: local time',
                  'Mercury',
+                 'HG_GASEOUS',
                  'Site ID: NAtChem',
                  'Site ID: standard',
                  'Time start: local time',
                  'Time zone: local',
+                 'Timezone',
                  'Hg_Gaseous_ngm3_Flag',
+                 'HG_GASEOUS_Flag',
                  'Time end: UTC',
                  'Time start: UTC',
                  'Date end: UTC',
@@ -130,11 +219,14 @@ def fix_column_names(colnames):
                  'DateStartLocalTime',
                  'DateEndLocalTime',
                  'Hg_Gaseous_ngm3',
+                 'Hg_Gaseous_ngm3',                 
                  'SiteID',
                  'SiteID',
                  'TimeStartLocalTime',
                  'TimeZone',
+                 'TimeZone',                 
                  'MercuryFlag1',
+                 'MercuryFlag1',                 
                  'TimeEndUTC',
                  'TimeStartUTC',
                  'DateEndUTC',
@@ -152,26 +244,31 @@ def fix_column_names(colnames):
             
     return colnames_new
 
-def load_data(site, fn_a):
+def load_data(site, dn,  fn_a):
     """Load the data over all years for the site
     
     Parameters
     ----------
     site : string
          Site code
+    dn : string
+         Path for Canadian mercury files                      
     fn_a : list
          List of file names
          
     """
-    # Column names in the CAPMON files
-    # colnames = ['SiteID', 'Instrument_ID',	'Date_start_LT', 'Time_start_LT',
-    #     'Date_end_LT', 'Time_end_LT', 'Time_zone','Date_start_UTC', 
-    #     'Time_start_UTC','Date_end_UTC', 'Time_end_UTC', 'TGM','Flag']
 
     # create empty data frame to store all sites and years
     frame = []
     colnames_a = []
-
+    
+    # problematic filenames, need to treat special cases
+    fn_issue = [dn + 'AtmosphericGases-TGM-CAPMoN-NS_Kejimkujik-2009.csv',
+                dn + 'AtmosphericGases-TGM-CAPMoN-NS_Kejimkujik-2010.csv',
+                dn + 'AtmosphericGases-TGM-CAPMoN-NS_Kejimkujik-2011.csv',
+                dn + 'AtmosphericGases-TGM-CAPMoN-NS_Kejimkujik-2012.csv',
+                dn + 'AtmosphericGases-TGM-CAPMoN-NS_Kejimkujik-2013.csv',]
+    
     # Loop over all data files, concatenate
     for fn in fn_a: # loop over filenames
         for f in glob.glob(fn): # loop over the different file years
@@ -181,6 +278,9 @@ def load_data(site, fn_a):
             # find the column names from the csv file
             colnames = pd.read_csv(f, skiprows=column_row, nrows=1, header=None, 
                      encoding='ISO-8859-1').values.flatten().tolist()
+            # fix csv issues manually with problematic files
+            if (f in fn_issue):
+                colnames = colnames[:-1] # take off last column, not in data
             # can't have multiple columns with same name
             if colnames.count('Mercury') > 1: # have duplicate Mercury entries
                 inds_dup = [i for i, c in enumerate(colnames) if c == 'Mercury'] # indices of duplicates
@@ -199,59 +299,103 @@ def load_data(site, fn_a):
             colnames_a.append(df_d_f_na.columns)
             # append to frame, so that can later concatenate
             df_d_temp = frame.append(df_d_f_na)
-            
+    
+    # print all column names
+    colnames_list = [item for sublist in colnames_a for item in sublist if item==item] # make sure not nan
+    colnames_u = list(set(colnames_list))
+    print(colnames_u)
+        
     # concatenate all data frames        
     df = pd.concat(frame)
     return df
 
-def get_data_d(site):
+def get_data_d(site, dn):
     """Get the daily data for the site
     
     Parameters
     ----------
     site : string
          Site code
+    dn : string
+         Path for Canadian mercury files             
     """
     
     # get the list of filename formats for the site
-    fn_a = get_filenames(site)
+    fn_a = get_filenames(dn, site)
+    
     # load data for all years into dataframe
-    df = load_data(site, fn_a)
+    df = load_data(site, dn, fn_a)
+    
     # Find where data is valid
     bool_valid1 = df['MercuryFlag1']=='V0' # Valid value 
     bool_valid2 = df['MercuryFlag1']=='V1' # Valid value but below detection limit. 
-    bool_valid3 = df['MercuryFlag1']=='V4' # Flag not in use 
+    bool_valid3 = df['MercuryFlag1']=='V4' # Flag not in use
+    
     # Boolean variable for data validity
     bool_valid = bool_valid1 | bool_valid2 | bool_valid3 
+    
     # Check as well that concentrations are non-negative
     bool_pos = df['Hg_Gaseous_ngm3'] >= 0
+    
     # Combine these two requirements
     bool_overall = bool_valid & bool_pos # these are valid data
+    
     # Filter data for validity
-    df_v = df[bool_overall]
-    # continue with getting the location, date etc...
-    # # sort data by year
-    # df = df.sort_values(by='DateStartLocalTime')
-    return df_v
+    df = df[bool_overall]
+    
+    # Check whether have multiple sites within dataset
+    print(df['SiteID'].unique())
+    
+    # Find list of site codes associated with the site
+    sitecodes = get_sitecodes(site)
+    
+    # Select only rows associated with desired site
+    df = df[df['SiteID'].isin(sitecodes)]
+    
+    # Check whether have multiple instruments with site
+    print(df['Instrument co-location ID'].unique())
+    
+    # Create datetime variables for start and end of measurements
+    time_start = pd.to_datetime(df['DateStartLocalTime'] + ' ' + df['TimeStartLocalTime'])
+    time_end = pd.to_datetime(df['DateEndLocalTime'] + ' ' + df['TimeEndLocalTime'])
+    
+    # find midpoint time
+    time_mid = ((time_end - time_start)/2 + time_start).values
+    df['time_mid'] = time_mid
+    
+    # sort data by correct time
+    df = df.sort_values(by='time_mid')
+    
+    # Check whether have duplicated dates within dataset, remove these
+    df = df.drop_duplicates(subset=['time_mid','SiteID'])
+    
+    # resample daily averages
+    df_d = df.set_index('time_mid').resample('D').mean().dropna()
+    
+    # make simple plot
+    plt.plot(df_d)
+    
+    return df, df_d
 
 #%% Calling functions
 # Names of sites in the Canadian network 
 site_names = ['Alert', "Bratt's Lake",'Burnt Island','Delta','Egbert','Esther',
-              'Flin Flon','Huntsman Center','Kejimkujik','Little Fox Lake',
+              'Flin Flon','Hunstsman Center','Kejimkujik','Little Fox Lake',
               'Mingan', 'Fort McMurray','Point Petre','Saturna','Southampton',
               'St. Anicet','Kuujjuarapik']
 # Codes for the sites (these aren't always consistent throughout data years)
 site_codes = ['ALT', 'BRL','BNT','DEL','EGB','EST','FLN','STA','KEJ','LFL',
             'WBT', 'FTM','PPT','SAT','PEI','WBZ','YGW']
 
+dn = '../../obs_datasets/CAPMON/' # directory for Candian files, change to your path
 
-df_ALT = get_data_d('ALT')
+df, df_d = get_data_d('YGW', dn)
 # # debug column names
 # colnames_list = [item for sublist in df_ALT for item in sublist if item==item] # make sure not nan
 # colnames_u = list(set(colnames_list))
 # print(colnames_u)
 #%% debug getting these data files - inconsistent columns for different years :S
-dn = '/Users/arifeinberg/Documents/Postdoc_MIT/datasets/CAPMON_Conc/' # directory name - CHANGE TO YOUR RELATIVE PATH
+dn = '../../obs_datasets/CAPMON/' # directory name - CHANGE TO YOUR RELATIVE PATH
 
 fn = '../../obs_datasets/CAPMON/AtmosphericGases-TGM-ECCC_AQRD-NU_Alert-2010.csv' # 119
 fn = '../../obs_datasets/CAPMON/AtmosphericGases-TGM-CAMNET-NU_Alert-2009.csv' # 89
@@ -268,11 +412,15 @@ df_temp2 = pd.read_csv(fn,
                     names = colnames,  index_col=False, encoding='ISO-8859-1', 
                     usecols=range(1,14))
 #%% testing reading
-colnames_f = pd.read_csv(dn + 'AtmosphericGases-TGM-ECCC_AQRD-NU_Alert-2016.csv', 
-                    skiprows=68, header=None, nrows=1, encoding='ISO-8859-1').values.flatten().tolist()
-print(colnames_f)
+fn = dn + 'AtmosphericGases-TGM-CAPMoN-NS_Kejimkujik-2009.csv'
+find_header_line(fn)
+find_column_line(fn)
 #%%
-temp = pd.read_csv(dn + 'AtmosphericGases-TGM-ECCC_AQRD-NU_Alert-2018.csv', 
-                    skiprows=89, header=0, names = colnames_f, encoding='ISO-8859-1')
+colnames_f = pd.read_csv(fn,
+                    skiprows=64, header=None, nrows=1, encoding='ISO-8859-1').values.flatten().tolist()
+print(colnames_f)
+temp = pd.read_csv(fn, 
+                    skiprows=82, header=0, names = colnames_f, encoding='ISO-8859-1')
+#%%
 # drop rows with less than 2 non NaN values, and all NaN columns
 temp_nona = temp.dropna(thresh=2).dropna(axis=1, how='all')
