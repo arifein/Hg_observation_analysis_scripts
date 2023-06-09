@@ -7,12 +7,8 @@ Load Hg0 observation data from CAPMoN dataset
 """
 
 #%% Import packages
-import xarray as xr
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
-from scipy import stats
-import datetime
 import glob
 #%% functions
 def get_filenames(dn, site):
@@ -142,7 +138,7 @@ def find_header_line(fn):
                 
             if (right_table == True) and (("*TABLE BEGINS" in line) or ("*TABLE DATA BEGINS" in line)):
                 header_num = ll
-                print(header_num)
+                #print(header_num)
                 break
     
     if header_num==-99: #didn't find a header number
@@ -178,7 +174,7 @@ def find_column_line(fn):
             # see if find overall corect line:
             if right_table and bool_col:
                 column_num = ll
-                print(column_num)
+                #print(column_num)
                 break
     
     if column_num==-99: #didn't find a header number
@@ -293,6 +289,8 @@ def load_data(site, dn,  fn_a):
             df_d_f = pd.read_csv(f, 
                     skiprows=header_row, header=0,
                     names = colnames_f,  encoding='ISO-8859-1')
+            # Note: DtypeWarnings can be ignored, do not affect performance
+            
             # drop rows with less than 2 non NaN values, and all NaN columns
             df_d_f_na = df_d_f.dropna(thresh=2).dropna(axis=1, how='all')
             # save out column names, in case have to debug this
@@ -303,7 +301,7 @@ def load_data(site, dn,  fn_a):
     # print all column names
     colnames_list = [item for sublist in colnames_a for item in sublist if item==item] # make sure not nan
     colnames_u = list(set(colnames_list))
-    print(colnames_u)
+    # print(colnames_u)
         
     # concatenate all data frames        
     df = pd.concat(frame)
@@ -344,7 +342,7 @@ def get_data_d(site, dn):
     df = df[bool_overall]
     
     # Check whether have multiple sites within dataset
-    print(df['SiteID'].unique())
+    #print(df['SiteID'].unique())
     
     # Find list of site codes associated with the site
     sitecodes = get_sitecodes(site)
@@ -353,7 +351,7 @@ def get_data_d(site, dn):
     df = df[df['SiteID'].isin(sitecodes)]
     
     # Check whether have multiple instruments with site
-    print(df['Instrument co-location ID'].unique())
+    #print(df['Instrument co-location ID'].unique())
     
     # Create datetime variables for start and end of measurements
     time_start = pd.to_datetime(df['DateStartLocalTime'] + ' ' + df['TimeStartLocalTime'])
@@ -371,10 +369,7 @@ def get_data_d(site, dn):
     
     # resample daily averages
     df_d = df.set_index('time_mid').resample('D').mean().dropna()
-    
-    # make simple plot
-    plt.plot(df_d)
-    
+        
     return df, df_d
 
 #%% Calling functions
@@ -388,39 +383,11 @@ site_codes = ['ALT', 'BRL','BNT','DEL','EGB','EST','FLN','STA','KEJ','LFL',
             'WBT', 'FTM','PPT','SAT','PEI','WBZ','YGW']
 
 dn = '../../obs_datasets/CAPMON/' # directory for Candian files, change to your path
-
-df, df_d = get_data_d('YGW', dn)
-# # debug column names
-# colnames_list = [item for sublist in df_ALT for item in sublist if item==item] # make sure not nan
-# colnames_u = list(set(colnames_list))
-# print(colnames_u)
-#%% debug getting these data files - inconsistent columns for different years :S
-dn = '../../obs_datasets/CAPMON/' # directory name - CHANGE TO YOUR RELATIVE PATH
-
-fn = '../../obs_datasets/CAPMON/AtmosphericGases-TGM-ECCC_AQRD-NU_Alert-2010.csv' # 119
-fn = '../../obs_datasets/CAPMON/AtmosphericGases-TGM-CAMNET-NU_Alert-2009.csv' # 89
-fn = '../../obs_datasets/CAPMON/AtmosphericGases-TGM-ECCC_AQRD-NU_Alert-2018.csv' # 84
-fn = '../../obs_datasets/CAPMON/AtmosphericGases-TGM-ECCC_AQRD-NU_Alert-2021.csv' # 83
-
-colnames = ['SiteID', 'Instrument_ID',	'Date_start_LT', 'Time_start_LT',
-    'Date_end_LT', 'Time_end_LT', 'Time_zone','Date_start_UTC', 
-    'Time_start_UTC','Date_end_UTC', 'Time_end_UTC', 'TGM','Flag']
-
-
-df_temp2 = pd.read_csv(fn, 
-                    skiprows=89, header=0, delimiter = ',',
-                    names = colnames,  index_col=False, encoding='ISO-8859-1', 
-                    usecols=range(1,14))
-#%% testing reading
-fn = dn + 'AtmosphericGases-TGM-CAPMoN-NS_Kejimkujik-2009.csv'
-find_header_line(fn)
-find_column_line(fn)
-#%%
-colnames_f = pd.read_csv(fn,
-                    skiprows=64, header=None, nrows=1, encoding='ISO-8859-1').values.flatten().tolist()
-print(colnames_f)
-temp = pd.read_csv(fn, 
-                    skiprows=82, header=0, names = colnames_f, encoding='ISO-8859-1')
-#%%
-# drop rows with less than 2 non NaN values, and all NaN columns
-temp_nona = temp.dropna(thresh=2).dropna(axis=1, how='all')
+do = '../misc_Data/' # directory for outputted daily mean files
+for i in range(len(site_codes)):
+    print("Loading site: " + site_names[i])
+    # get hourly and daily data from sites
+    df, df_d = get_data_d(site_codes[i], dn)
+    # output csv of daily averages
+    fo = do + site_codes[i] + '_d.csv'
+    df_d.to_csv(fo)
