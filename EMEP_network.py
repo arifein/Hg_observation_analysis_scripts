@@ -10,10 +10,9 @@ Load Hg0 observation data from EMEP dataset
 import numpy as np
 import pandas as pd
 import glob
-import matplotlib.pyplot as plt
 from scipy import stats
 #%% functions
-def get_filenames(dn, site):
+def get_filenames_EMEP(dn, site):
     """Get the data filename(s) for the site
     
     Parameters
@@ -70,7 +69,7 @@ def get_filenames(dn, site):
     return fn
 
 
-def find_header_line(fn):
+def find_header_line_EMEP(fn):
     """Find line number of header in a data file
     
     Parameters
@@ -149,7 +148,7 @@ def convert_time_res(df, t_res):
       
     return df_t
 
-def fix_column_names(colnames):
+def fix_column_names_EMEP(colnames):
     """Fix column names so that consistent between different years/sites of the dataset
     
     Parameters
@@ -180,7 +179,7 @@ def fix_column_names(colnames):
             
     return colnames_new
 
-def load_data(site, dn, fn_a, t_res):
+def load_data_EMEP(site, dn, fn_a, t_res):
     """Load the data over all years for the site
     
     Parameters
@@ -203,7 +202,7 @@ def load_data(site, dn, fn_a, t_res):
     for fn in fn_a: # loop over filenames
         for f in glob.glob(fn): # loop over the different file years
             print(f)
-            header_row = find_header_line(f) # find the row number to start data
+            header_row = find_header_line_EMEP(f) # find the row number to start data
             # find the column names from the csv file
             colnames = pd.read_csv(f, skiprows=header_row, nrows=1, header=None, sep=' ',
                      encoding='ISO-8859-1').values.flatten().tolist()
@@ -213,7 +212,7 @@ def load_data(site, dn, fn_a, t_res):
                 colnames[inds_dup[1]] = 'GEM_std' # list as stdev
             
             # standardize column names between different datasets
-            colnames_f = fix_column_names(colnames)
+            colnames_f = fix_column_names_EMEP(colnames)
 
             # load dataset from file
             df = pd.read_csv(f, 
@@ -301,7 +300,7 @@ def load_data(site, dn, fn_a, t_res):
     df_t = pd.concat(frame)
     return df_t
 
-def get_data_d(site, dn, t_res):
+def get_data_EMEP(site, dn, t_res):
     """Get the daily data for the site
     
     Parameters
@@ -315,10 +314,10 @@ def get_data_d(site, dn, t_res):
     """
     
     # get the list of filename formats for the site
-    fn_a = get_filenames(dn, site)
+    fn_a = get_filenames_EMEP(dn, site)
         
     # load data for all years into dataframe
-    df = load_data(site, dn, fn_a, t_res)
+    df = load_data_EMEP(site, dn, fn_a, t_res)
 
     # sort data by correct time
     df = df.sort_index()
@@ -335,7 +334,7 @@ site_names = ['Auchencorth Moss, UK', 'Lista, Norway', 'Birkenes, Norway',
               'Zeppelin, Spitsbergen', 'Diabla Gora, Poland', 'Waldhof, Germany',
               'Schauinsland, Germany', 'Schmucke, Germany', 'Zingst, Germany',
               'Niembro, Spain', 'Iskrba, Slovenia','Villum (Nord), Greenland',
-              'Lahema, Estonia','Chilbolton, UK','Troll, Antarctica', 
+              'Lahemaa, Estonia','Chilbolton, UK','Troll, Antarctica', 
               'Trollhaugen, Antarctica', 'Andoya, Norway']
 
 # Codes for the sites (these aren't the same as EMEP codes)
@@ -356,7 +355,7 @@ do = '../misc_Data/' # directory for outputted daily mean files
 for i in range(len(site_codes)):
     print("Loading site: " + site_names[i])
     # get data from sites at desired time resolution
-    df = get_data_d(site_codes[i], dn, site_time_res[i])
+    df = get_data_EMEP(site_codes[i], dn, site_time_res[i])
     # output csv of daily averages
     fo = do + site_codes[i] + '_' + site_time_res[i].lower() + '.csv'
     df.to_csv(fo)

@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import glob
 #%% functions
-def get_filenames(dn, site):
+def get_filenames_CAPMoN(dn, site):
     """Get the data filename(s) for the site
     
     Parameters
@@ -115,7 +115,7 @@ def get_sitecodes(site):
         sitecodes = ['']
     return sitecodes
 
-def find_header_line(fn):
+def find_header_line_CAPMoN(fn):
     """Find line number of header in a data file
     
     Parameters
@@ -181,7 +181,7 @@ def find_column_line(fn):
         print("Error with filename: " + fn)
     return column_num
 
-def fix_column_names(colnames):
+def fix_column_names_CAPMoN(colnames):
     """Fix column names so that consistent between different years/sites of the dataset
     
     Parameters
@@ -240,7 +240,7 @@ def fix_column_names(colnames):
             
     return colnames_new
 
-def load_data(site, dn,  fn_a):
+def load_data_CAPMoN(site, dn,  fn_a):
     """Load the data over all years for the site
     
     Parameters
@@ -269,7 +269,7 @@ def load_data(site, dn,  fn_a):
     for fn in fn_a: # loop over filenames
         for f in glob.glob(fn): # loop over the different file years
             print(f)
-            header_row = find_header_line(f) # find the row number to start data
+            header_row = find_header_line_CAPMoN(f) # find the row number to start data
             column_row = find_column_line(f) # find the row number of column names
             # find the column names from the csv file
             colnames = pd.read_csv(f, skiprows=column_row, nrows=1, header=None, 
@@ -284,7 +284,7 @@ def load_data(site, dn,  fn_a):
                     i1 = i +1
                     colnames[inds_dup[i1]] = 'MercuryFlag' + str(i1) # list as flag
             # standardize column names between different datasets
-            colnames_f = fix_column_names(colnames)
+            colnames_f = fix_column_names_CAPMoN(colnames)
             # load dataset for year
             df_d_f = pd.read_csv(f, 
                     skiprows=header_row, header=0,
@@ -307,7 +307,7 @@ def load_data(site, dn,  fn_a):
     df = pd.concat(frame)
     return df
 
-def get_data_d(site, dn):
+def get_data_CAPMoN(site, dn):
     """Get the daily data for the site
     
     Parameters
@@ -319,10 +319,10 @@ def get_data_d(site, dn):
     """
     
     # get the list of filename formats for the site
-    fn_a = get_filenames(dn, site)
+    fn_a = get_filenames_CAPMoN(dn, site)
     
     # load data for all years into dataframe
-    df = load_data(site, dn, fn_a)
+    df = load_data_CAPMoN(site, dn, fn_a)
     
     # Find where data is valid
     bool_valid1 = df['MercuryFlag1']=='V0' # Valid value 
@@ -387,7 +387,7 @@ do = '../misc_Data/' # directory for outputted daily mean files
 for i in range(len(site_codes)):
     print("Loading site: " + site_names[i])
     # get hourly and daily data from sites
-    df, df_d = get_data_d(site_codes[i], dn)
+    df, df_d = get_data_CAPMoN(site_codes[i], dn)
     # output csv of daily averages
     fo = do + site_codes[i] + '_d.csv'
     df_d.to_csv(fo)
