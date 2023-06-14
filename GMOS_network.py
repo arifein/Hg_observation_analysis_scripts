@@ -6,7 +6,6 @@ Load Hg0 observation data from GMOS dataset
 @author: arifeinberg
 """
 #%% Import packages
-import xarray as xr
 import numpy as np
 import pandas as pd
 #%% Functions used for analysis
@@ -67,8 +66,6 @@ def get_data_GMOS(site, dn):
          Site code
     dn : string
          Path for GMOS mercury files   
-    t_res: string      
-         Time resolution of the data   
     """
     
     # get the filename for the site
@@ -91,7 +88,7 @@ def get_data_GMOS(site, dn):
 #                 'PAL','PIR','PSA','RAO','ROR','SHL','SIS','SLU','STN','TRO',
 #                 'VAV','WAN','ZEP','MAU']
 stations_all = ['RAO', 'CPO', 'MBA']
-dn = '../../obs_datasets/TGM/GMOS/' # directory for EMEP files, change to your path
+dn = '../../obs_datasets/TGM/GMOS/' # directory for GMOS files, change to your path
 do = '../misc_Data/' # directory for outputted daily mean files
 
 # run loop over sites to load and process data
