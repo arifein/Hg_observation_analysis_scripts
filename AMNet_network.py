@@ -46,7 +46,7 @@ def get_data_AMNet(df, station):
     
     # get only years from time_mid, so that can use cutoff
     # resample daily averages
-    df_valid_d = df_valid.set_index('time_GEM').resample('D').mean() 
+    df_valid_d = df_valid.set_index('time_GEM').resample('D').mean().dropna()
     
     # sort data by correct time
     df_valid_d = df_valid_d.sort_index()
