@@ -87,7 +87,7 @@ def get_data_GMOS(site, dn):
 #                 'LSM','MAL','MAN','MBA','MCH','MHE','MIN','MWA','NIK',
 #                 'PAL','PIR','PSA','RAO','ROR','SHL','SIS','SLU','STN','TRO',
 #                 'VAV','WAN','ZEP','MAU']
-stations_all = ['RAO', 'CPO', 'MBA']
+stations_all = ['RAO', 'CPO', 'MBA', 'PAL']
 dn = '../../obs_datasets/TGM/GMOS/' # directory for GMOS files, change to your path
 do = '../misc_Data/' # directory for outputted daily mean files
 

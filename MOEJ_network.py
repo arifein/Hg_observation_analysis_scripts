@@ -3,6 +3,7 @@
 """
 Created on Wed Jun  14 16:04:41 2023
 Load Hg0 observation data from MOEJ dataset (Japan)
+Files provided by Hiroyuki Tsukamoto and Takashi Yamamoto upon request
 @author: arifeinberg
 """
 #%% Import packages
@@ -95,7 +96,6 @@ def get_data_MOEJ(site, dn):
 stations_all = ['CHE', 'OGA']
 dn = '../../obs_datasets/GEM/CapeHEDO_GEM_2007-2022/' # directory for MOEJ files, change to your path
 do = '../misc_Data/' # directory for outputted daily mean files
-import matplotlib.pyplot as plt
 
 # run loop over sites to load and process data
 for station in stations_all:
