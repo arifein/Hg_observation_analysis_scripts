@@ -72,4 +72,3 @@ for station in stations_all:
     # output csv of daily averages
     fo = do + station + '_d.csv'
     df.to_csv(fo)
-    
