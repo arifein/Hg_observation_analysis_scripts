@@ -67,8 +67,6 @@ site_names = ['Birmingham', 'Pensacola','Yorkville','Mauna Loa','Piney Reservoir
 # Codes for the sites
 site_codes = ['AL19','FL96','GA40', 'HI00','MD08','MD98','MS99','NJ30',
               'NY06','NY20','NY43','OH02','OH52','OK99','UT97','VT99','WI07',]
-site_codes = ['MS99']
-site_names = ['MS99']
 # read file with all hourly data
 df_all = pd.read_csv(fn_all)
 for i in range(len(site_names)):
