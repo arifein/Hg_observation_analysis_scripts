@@ -26,8 +26,8 @@ def get_data_AMNet(df, station):
     if (station == 'MD98'):
         df_station2 = df[df['SiteID']=='MD99'].copy()
         df_station =  pd.concat([df_station, df_station2]) 
-    elif (station == 'MS12'):
-        df_station2 = df[df['SiteID']=='MS99'].copy()
+    elif (station == 'MS99'):
+        df_station2 = df[df['SiteID']=='MS12'].copy()
         df_station =  pd.concat([df_station, df_station2]) 
     
     # Find where data is invalid
@@ -67,7 +67,8 @@ site_names = ['Birmingham', 'Pensacola','Yorkville','Mauna Loa','Piney Reservoir
 # Codes for the sites
 site_codes = ['AL19','FL96','GA40', 'HI00','MD08','MD98','MS99','NJ30',
               'NY06','NY20','NY43','OH02','OH52','OK99','UT97','VT99','WI07',]
-
+site_codes = ['MS99']
+site_names = ['MS99']
 # read file with all hourly data
 df_all = pd.read_csv(fn_all)
 for i in range(len(site_names)):

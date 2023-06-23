@@ -26,7 +26,7 @@ def get_filenames_EMEP(dn, site):
         fn = [dn + 'biweekly_data/GB0048R.200*.nas',
               dn + 'biweekly_data/GB0048R.2011*.nas',
               dn + 'hourly_data/GB0048R.*.nas'] # hourly data after 2011
-    elif site=='LIS':
+    elif site=='LST':
         fn = [dn + 'monthly_data/NO0099R.*.nas', #1992-1994, 1999
               dn + 'daily_data/NO0099R.*.nas']
     elif site=='BIR':
@@ -338,7 +338,7 @@ site_names = ['Auchencorth Moss, UK', 'Lista, Norway', 'Birkenes, Norway',
               'Trollhaugen, Antarctica', 'Andoya, Norway']
 
 # Codes for the sites (these aren't the same as EMEP codes)
-site_codes = ['AUC', 'LIS','BIR','ZEP', 'DIA', 'WAL', 'SCA', 'SCK', 'ZIN', 'NBO',
+site_codes = ['AUC', 'LST','BIR','ZEP', 'DIA', 'WAL', 'SCA', 'SCK', 'ZIN', 'NBO',
               'ISK','STN','LAH', 'CHI','TRO1', 'TRO2','AND']
 
 # # Time resolution (coarsest resolution to allow longer time series)
