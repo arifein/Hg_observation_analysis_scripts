@@ -18,7 +18,13 @@ Data can be accessed at (currently under maintenance): https://sdi.iia.cnr.it/go
 Data can be requested from the Ministry of the Environment Japan (MOEJ). For publication, see:  https://doi.org/10.3390/atmos10070362
 
 -FMI (Finland) network: Finland_network.py
-These data are submitted to EMEP, but an updated version was provided by Katriina Kyllönen.
+These data are submitted to EMEP, but an updated version was provided by K. Kyllönen.
 
--miscellaneous data: other_sites.py
-These data sets were provided by other sources, not directly from the networks
+-MHD data: MHD.py
+These updated data for Mace Head were provided by D. Custodio 
+
+-ELA data: ELA.py
+These data for Experimental Lakes Area were provided by V. St. Louis
+
+-MLO data: MLO_data.py
+These data for Mauna Loa from the EPA measurements 2002–2010 were provided by M. Landis
