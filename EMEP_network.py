@@ -64,6 +64,16 @@ def get_filenames_EMEP(dn, site):
         fn = [dn + 'hourly_data/NO0059G.*.nas']
     elif site=='AND':
         fn = [dn + 'hourly_data/NO0090R.*.nas']
+    elif site=='PAL':
+        fn = [dn + 'daily_data/FI0036R.*gold_trap*.nas', # 1996-1997
+              dn + 'daily_data/FI0036R.*amalg_tube*.nas'] # 1998-2020
+    elif site=='BRE':
+        fn = [dn + 'daily_data/SE0005R.*.nas']
+    elif site=='RAO':
+        fn = [dn + 'daily_data/SE0014R.*.nas']
+    elif site=='HAL':
+        fn = [dn + 'daily_data/SE0011R.*.nas',  # Vavihill 2009-2015
+              dn + 'daily_data/SE0020R.*.nas']  # Hallahus 2016-2021
     else:
         fn = ['']
     return fn
@@ -85,7 +95,7 @@ def find_header_line_EMEP(fn):
                     
             if ("starttime" in line): # where have column labels
                 header_num = ll
-                #print(header_num)
+                # print(header_num)
                 break
     
     if header_num==-99: #didn't find a header number
@@ -158,12 +168,16 @@ def fix_column_names_EMEP(colnames):
     """
     
     # list of names to adjust
-    old_names = ['GEM', 
+    old_names = ['GEM',
+                 'Hg',
                  'flag_GEM',
-                 'flag']
+                 'flag',
+                 'flag_Hg']
     
    # list of new names to set
     new_names = ['TGM', 
+                 'TGM',
+                 'flag_TGM',
                  'flag_TGM',
                  'flag_TGM']
     colnames_new = colnames
@@ -230,17 +244,16 @@ def load_data_EMEP(site, dn, fn_a, t_res):
             df['time_mid'] = time_mid
             
             # select valid values
-            bool_valid = df['flag_TGM']==0. # Valid value 
+            bool_valid = df['flag_TGM']==0.  # Valid value 
             
             # Check as well that concentrations are not invalid
-            bool_pos = df['TGM'] < 99.
+            bool_pos = (df['TGM'] < 99.) & (df['TGM'] > 0.)
             
             # Combine these two requirements
             bool_overall = bool_valid & bool_pos # these are valid data
-            
             # Filter data for validity
             df = df[bool_overall]
-            
+
             # if all measurements invalid, skip to next iteration
             if df.empty:
                 print('No valid measurements in this file')
@@ -249,7 +262,7 @@ def load_data_EMEP(site, dn, fn_a, t_res):
             colnames_a.append(df.columns)
             
             # calculate the time resolution of the file
-            d_diff = round(stats.mode(df.endtime - df.starttime)[0][0])
+            d_diff = round(np.median(df.endtime - df.starttime))
             print(d_diff)
             # set index to the time_mid, needed for resampling consistently
             df = df.set_index('time_mid')
@@ -315,7 +328,7 @@ def get_data_EMEP(site, dn, t_res):
     
     # get the list of filename formats for the site
     fn_a = get_filenames_EMEP(dn, site)
-        
+
     # load data for all years into dataframe
     df = load_data_EMEP(site, dn, fn_a, t_res)
 
@@ -340,13 +353,15 @@ site_names = ['Auchencorth Moss, UK', 'Lista, Norway', 'Birkenes, Norway',
 # Codes for the sites (these aren't the same as EMEP codes)
 site_codes = ['AUC', 'LST','BIR','ZEP', 'DIA', 'WAL', 'SCA', 'SCK', 'ZIN', 'NBO',
               'ISK','STN','LAH', 'CHI','TRO1', 'TRO2','AND']
-
 # # Time resolution (coarsest resolution to allow longer time series)
 # site_time_res = ['2W','M','W','D','D','D','D','D','D','D',
 #                   'D','D','D','D','D','D','D']
 # Time resolution (daily, where available)
 site_time_res = ['D','D','D','D','D','D','D','D','D','D',
                   'D','D','D','D','D','D','D']
+site_names = ['Pallas, Finland', 'Bredkalen, Sweden', 'Rao, Sweden', 'Hallahus/Vavihill, Sweden']
+site_codes = ['PAL','BRE', 'RAO','HAL']
+site_time_res = ['D', 'D','D','D']
 
 dn = '../../obs_datasets/EMEP/' # directory for EMEP files, change to your path
 do = '../misc_Data/' # directory for outputted daily mean files
