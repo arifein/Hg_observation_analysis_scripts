@@ -9,6 +9,9 @@ Load Hg0 observation data from CAPMoN dataset
 #%% Import packages
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import datetime
+from dateutil.parser import parse
 import glob
 #%% functions
 def get_filenames_CAPMoN(dn, site):
@@ -357,20 +360,20 @@ def get_data_CAPMoN(site, dn):
     time_start = pd.to_datetime(df['DateStartLocalTime'] + ' ' + df['TimeStartLocalTime'])
     time_end = pd.to_datetime(df['DateEndLocalTime'] + ' ' + df['TimeEndLocalTime'])
     
-    # find midpoint time
-    time_mid = ((time_end - time_start)/2 + time_start).values
-    df['time_mid'] = time_mid
+    df['timeStart'] = time_start
+    df['timeEnd'] = time_start
     
     # sort data by correct time
-    df = df.sort_values(by='time_mid')
+    df = df.sort_values(by='timeStart')
     
     # Check whether have duplicated dates within dataset, remove these
-    df = df.drop_duplicates(subset=['time_mid','SiteID'])
+    df = df.drop_duplicates(subset=['timeStart','SiteID'])
     
-    # resample daily averages
-    df_d = df.set_index('time_mid').resample('D').mean().dropna()
+    df['SiteID'] = site # rename siteID
+    df = df[['SiteID','timeStart','timeEnd','Hg_Gaseous_ngm3']]
+    df = df.rename(columns={"Hg_Gaseous_ngm3": 'GEM'})
         
-    return df, df_d
+    return df
 
 #%% Calling functions
 # Names of sites in the Canadian network 
@@ -383,11 +386,39 @@ site_codes = ['ALT', 'BRL','BNT','DEL','EGB','EST','FLN','STA','KEJ','LFL',
             'WBT', 'FTM','PPT','SAT','PEI','WBZ','YGW']
 
 dn = '../../obs_datasets/CAPMON/' # directory for Candian files, change to your path
-do = '../misc_Data/' # directory for outputted daily mean files
+do = 'all_data/' # directory for outputted files
+
+#%% Function for converting to fractional years
+def year_fraction(date):
+    start = datetime.date(date.year, 1, 1).toordinal()
+    year_length = datetime.date(date.year+1, 1, 1).toordinal() - start
+    return date.year + float(date.toordinal() - start) / year_length
+# create ufunc from weird division1
+u_year_fraction = np.vectorize(year_fraction)
+
 for i in range(len(site_codes)):
     print("Loading site: " + site_names[i])
     # get hourly and daily data from sites
-    df, df_d = get_data_CAPMoN(site_codes[i], dn)
-    # output csv of daily averages
-    fo = do + site_codes[i] + '_d.csv'
-    df_d.to_csv(fo)
+    df = get_data_CAPMoN(site_codes[i], dn)
+    # output csv of all data 
+    fo = do + site_codes[i] + '_all.csv'
+    df.to_csv(fo, index=False)
+    # add plot
+    f,  axes = plt.subplots(1,1, figsize=[18,10],
+                        gridspec_kw=dict(hspace=0.35, wspace=0.35))
+    # change to string list
+    #time_str = df.timeStart.strftime('%Y/%m/%d %H:%s').values
+
+    # get date from timeseries with datetime function
+    #ts_date = np.array([parse(x) for x in time_str])
+    # convert to fractional year formate
+    # time = u_year_fraction(ts_date)
+    axes.plot(df.timeStart, df['GEM'], '.', ms=1)
+    axes.set_title(site_codes[i])
+    axes.set_ylabel('GEM (ng m$^{-3}$)')
+    # set limits, for better visualization
+    pct_995 = np.percentile( df['GEM'],99.5)
+    pct_005 = np.percentile( df['GEM'],00.5)
+    axes.set_ylim(top = pct_995, bottom = pct_005)
+    f.savefig('Figures/'+site_codes[i]+'_all.pdf',bbox_inches = 'tight')
+

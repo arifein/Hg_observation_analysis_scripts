@@ -55,7 +55,7 @@ def get_data_AMNet(df, station):
 #%% Read all AMNet data
 # file name
 fn_all= '../../obs_datasets/GEM/AMNET-ALL-h.csv' # change relative path to AMNet data
-do = 'all_data/' # directory for outputted daily mean files
+do = 'all_data/' # directory for outputted files
 
 # Codes for the sites
 site_codes = ['AK03','AL03','AL19','CA48','FL96','GA40','HI00','IL11',
@@ -70,7 +70,7 @@ for i in range(len(site_codes)):
     print("Loading site: " + site_codes[i])
     # get data from sites at daily time resolution
     df = get_data_AMNet(df_all, site_codes[i])
-    # output csv of daily averages
+    # output csv of all measurements 
     fo = do + site_codes[i] + '_all.csv'
     df.to_csv(fo, index=False)
     
