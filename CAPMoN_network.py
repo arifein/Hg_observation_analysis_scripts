@@ -377,13 +377,12 @@ def get_data_CAPMoN(site, dn):
 
 #%% Calling functions
 # Names of sites in the Canadian network 
-site_names = ['Alert', "Bratt's Lake",'Burnt Island','Delta','Egbert','Esther',
-              'Flin Flon','Hunstsman Center','Kejimkujik','Little Fox Lake',
-              'Mingan', 'Fort McMurray','Point Petre','Saturna','Southampton',
-              'St. Anicet','Kuujjuarapik']
+site_names = ['Alert', "Bratt's Lake",'Egbert',
+              'Flin Flon','Kejimkujik','Little Fox Lake',
+              'Fort McMurray','Saturna']
 # Codes for the sites (these aren't always consistent throughout data years)
-site_codes = ['ALT', 'BRL','BNT','DEL','EGB','EST','FLN','STA','KEJ','LFL',
-            'WBT', 'FTM','PPT','SAT','PEI','WBZ','YGW']
+site_codes = ['ALT', 'BRL','EGB','FLN','KEJ','LFL',
+             'FTM','SAT']
 
 dn = '../../obs_datasets/CAPMON/' # directory for Candian files, change to your path
 do = 'all_data/' # directory for outputted files
