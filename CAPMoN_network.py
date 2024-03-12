@@ -10,9 +10,10 @@ Load Hg0 observation data from CAPMoN dataset
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import datetime
-from dateutil.parser import parse
 import glob
+import matplotlib
+matplotlib.use('Agg')
+
 #%% functions
 def get_filenames_CAPMoN(dn, site):
     """Get the data filename(s) for the site
@@ -387,14 +388,6 @@ site_codes = ['ALT', 'BRL','EGB','FLN','KEJ','LFL',
 dn = '../../obs_datasets/CAPMON/' # directory for Candian files, change to your path
 do = 'all_data/' # directory for outputted files
 
-#%% Function for converting to fractional years
-def year_fraction(date):
-    start = datetime.date(date.year, 1, 1).toordinal()
-    year_length = datetime.date(date.year+1, 1, 1).toordinal() - start
-    return date.year + float(date.toordinal() - start) / year_length
-# create ufunc from weird division1
-u_year_fraction = np.vectorize(year_fraction)
-
 for i in range(len(site_codes)):
     print("Loading site: " + site_names[i])
     # get hourly and daily data from sites
@@ -405,14 +398,7 @@ for i in range(len(site_codes)):
     # add plot
     f,  axes = plt.subplots(1,1, figsize=[18,10],
                         gridspec_kw=dict(hspace=0.35, wspace=0.35))
-    # change to string list
-    #time_str = df.timeStart.strftime('%Y/%m/%d %H:%s').values
-
-    # get date from timeseries with datetime function
-    #ts_date = np.array([parse(x) for x in time_str])
-    # convert to fractional year formate
-    # time = u_year_fraction(ts_date)
-    axes.plot(df.timeStart, df['GEM'], '.', ms=1)
+    axes.plot(pd.to_datetime(df.timeStart), df['GEM'], '.', ms=1)
     axes.set_title(site_codes[i])
     axes.set_ylabel('GEM (ng m$^{-3}$)')
     # set limits, for better visualization
