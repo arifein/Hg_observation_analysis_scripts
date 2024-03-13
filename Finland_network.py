@@ -9,6 +9,10 @@ Load Hg0 observation data from Finland dataset (courtesy of ￼Katriina Kyllöne
 import glob
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
+
 #%% Functions used for analysis
 def get_sitename(site):
     """Get the name for the site from the codes
@@ -19,7 +23,7 @@ def get_sitename(site):
          Site code
     """
     
-    if site=='PAL1':
+    if site=='PAL_FMI':
         sitename = 'Pallas'
     elif site=='HYY':
         sitename = 'Hyytiälä'
@@ -50,7 +54,11 @@ def load_data_FIN(site, fn):
     sitename = get_sitename(site)
     Hg_var = df_d_f[sitename]
     
-    df = pd.DataFrame({'time': date_var, 'TGM': Hg_var})
+    df = pd.DataFrame({'timeStart': date_var, 'GEM': Hg_var})
+    df['SiteID'] = site
+
+    # Add offset to calculate start and end time to be consistent with other networks
+    df['timeEnd'] = df['timeStart'] +  pd.DateOffset(hours=1)
     
     # drop rows with NaN values
     df_na = df.dropna()
@@ -79,24 +87,34 @@ def get_data_FIN(site, dn):
     # print(sum(bool_neg))
         
     # sort data by correct time
-    df = df.sort_values(by='time')
-    
-    # resample daily averages
-    df_d = df.set_index('time').resample('D').mean().dropna()
-                    
-    return df_d
+    df = df.sort_values(by='timeStart')
+
+    # reorder columns
+    df = df[['SiteID','timeStart','timeEnd','GEM']] 
+    return df
 
 #%% Read FIN data
-stations_all = ['PAL1']#, 'HYY', 'VIR']
+stations_all = ['PAL_FMI', 'HYY', 'VIR']
 dn = '../../obs_datasets/TGM/misc/' # directory for FIN files, change to your path
-do = '../misc_Data/' # directory for outputted daily mean files
+do = 'all_data/' # directory for outputted files
 
 # run loop over sites to load and process data
 for station in stations_all:
     print("Loading site: " + station)
     # get daily data from site
     df = get_data_FIN(station, dn)
-    # output csv of daily averages
-    fo = do + station + '_d.csv'
-    df.to_csv(fo)
+    # output csv of all datav
+    fo = do + station + '_all.csv'
+    df.to_csv(fo, index=False)
+    # add plot
+    f,  axes = plt.subplots(1,1, figsize=[18,10],
+                        gridspec_kw=dict(hspace=0.35, wspace=0.35))
+    axes.plot(pd.to_datetime(df.timeStart), df['GEM'], '.', ms=1)
+    axes.set_title(station)
+    axes.set_ylabel('GEM (ng m$^{-3}$)')
+    # set limits, for better visualization
+    pct_995 = np.percentile( df['GEM'],99.5)
+    pct_005 = np.percentile( df['GEM'],00.5)
+    axes.set_ylim(top = pct_995, bottom = pct_005)
+    f.savefig('Figures/'+station+'_all.pdf',bbox_inches = 'tight')
     
