@@ -71,8 +71,6 @@ def get_data_GMOS(site, dn):
     dn : string
          Path for GMOS mercury files   
     """
-    if site=='PAL_GMOS': # change name to be consistent
-      site = 'PAL'
 
     # get the filename for the site
     fn = dn + site + '.csv'
@@ -88,8 +86,6 @@ def get_data_GMOS(site, dn):
     df = df[['FID','tstamp','value']]
     df = df.rename(columns={"FID": 'SiteID',"tstamp": 'timeMid', "value":'GEM'})
     df['SiteID'] = site # rename to site
-    if site=='PAL': # change name to be consistent
-      df['SiteID'] = 'PAL_GMOS'
                 
     return df
 
@@ -97,7 +93,7 @@ def get_data_GMOS(site, dn):
 
 
 stations_all = ['NIK','BAR','CAL', 'CMA', 'CST', 'EVK', 'KOD', 'KREGND',
-                'LIS', 'LSM', 'PAL_GMOS', 'SHL','SIS', 
+                'LIS', 'LSM', 'SHL','SIS', 
                 'CPO','LON','MAL','MBA','MIN','MWA','SLU','GVB', 'MCH']
 
 dn = '../../obs_datasets/TGM/GMOS/' # directory for GMOS files, change to your path
