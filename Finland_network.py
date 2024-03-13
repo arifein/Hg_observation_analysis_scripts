@@ -117,4 +117,3 @@ for station in stations_all:
     pct_005 = np.percentile( df['GEM'],00.5)
     axes.set_ylim(top = pct_995, bottom = pct_005)
     f.savefig('Figures/'+station+'_all.pdf',bbox_inches = 'tight')
-    
