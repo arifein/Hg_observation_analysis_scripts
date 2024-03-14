@@ -63,11 +63,11 @@ do = 'all_data/' # directory for outputted files
 
 # Codes for the sites
 site_codes = ['AK03','AL03','AL19','CA48','FL96','GA40','HI00','IL11',
-              'IN21','IN34','MD08','MD99','ME97','MI09','MS99',
+              'IN21','IN34','MD08','MD98','ME97','MI09','MS99',
               'NH06','NJ05','NJ30','NJ54','NY06','NY20','NY43','OH02',
               'OH52','OK99','PA13','UT96','UT97','VT99','WI07','WV99',
               'AK95']
-      
+site_codes =['MD98'] 
 # read file with all hourly data
 df_all = pd.read_csv(fn_all)
 for i in range(len(site_codes)):
