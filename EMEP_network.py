@@ -11,6 +11,10 @@ import numpy as np
 import pandas as pd
 import glob
 from scipy import stats
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
+
 #%% functions
 def get_filenames_EMEP(dn, site):
     """Get the data filename(s) for the site
@@ -64,7 +68,7 @@ def get_filenames_EMEP(dn, site):
         fn = [dn + 'hourly_data/NO0059G.*.nas']
     elif site=='AND':
         fn = [dn + 'hourly_data/NO0090R.*.nas']
-    elif site=='PAL':
+    elif site=='PAL_IVL':
         fn = [dn + 'daily_data/FI0036R.*gold_trap*.nas', # 1996-1997
               dn + 'daily_data/FI0036R.*amalg_tube*.nas'] # 1998-2020
     elif site=='BRE':
@@ -129,35 +133,6 @@ def find_startdate(fn):
     start_date = pd.to_datetime(date_str, format='%Y%m%d%H%M%S', utc = True) # assume UTC
     return start_date
 
-def convert_time_res(df, t_res):
-    """Convert DataFrame to be the correct time resolution
-
-    df : DataFrame
-         Site data at original time resolution
-    t_res : string
-         Required time resolution of output DataFrame
-    """
-    
-    # use if statements to get data at correct time resolution
-    if t_res =='H': # hourly data
-        df_t = df.resample('H').mean().dropna()
-    elif t_res =='D': # daily data
-        df_t = df.resample('D').mean().dropna()
-    elif t_res =='W': # weekly data
-        df_t = df.resample('7D').mean().dropna()
-        # shift index by 3.5 so centered
-        df_t.index = df_t.index + pd.to_timedelta( 3.5, unit = 'D')
-    elif t_res =='2W': # biweekly data
-        df_t = df.resample('14D').mean().dropna()
-        # shift index by 7 so centered
-        df_t.index = df_t.index + pd.to_timedelta(7, unit = 'D')
-    elif t_res =='M': # monthly data
-        df_t = df.resample('MS').mean().dropna()
-        # shift index by 15 so centered
-        df_t.index = df_t.index + pd.to_timedelta(15, unit = 'D')
-      
-    return df_t
-
 def fix_column_names_EMEP(colnames):
     """Fix column names so that consistent between different years/sites of the dataset
     
@@ -193,7 +168,7 @@ def fix_column_names_EMEP(colnames):
             
     return colnames_new
 
-def load_data_EMEP(site, dn, fn_a, t_res):
+def load_data_EMEP(site, dn, fn_a ):
     """Load the data over all years for the site
     
     Parameters
@@ -204,8 +179,6 @@ def load_data_EMEP(site, dn, fn_a, t_res):
          Path for EMEP mercury files                      
     fn_a : list
          List of file names
-    t_res : string
-         Required time resolution of output dataframe
     """
 
     # create empty data frame to store all sites and years
@@ -242,7 +215,10 @@ def load_data_EMEP(site, dn, fn_a, t_res):
             # find midpoint time and include this in dataframe
             time_mid = ((date_end - date_start)/2 + date_start).values
             df['time_mid'] = time_mid
-            
+            # for Helene, add start and end date
+            df['timeStart'] = date_start.dt.tz_localize(None)
+            df['timeEnd'] = date_end.dt.tz_localize(None)
+
             # select valid values
             bool_valid = df['flag_TGM']==0.  # Valid value 
             
@@ -290,19 +266,9 @@ def load_data_EMEP(site, dn, fn_a, t_res):
                 suitable_res = ['M']
             else:
                 raise Exception('Correct time resolution not found')
-            # check if time resolution can be suitably converted
-            if t_res in suitable_res:
-                if t_res == f_t_res: 
-                    df_t = df
-                else: # need to convert time resolution
-                    df_t = convert_time_res(df, t_res)
-                    
-            else: # don't have suitable time resolution
-                print("Skipped file, short averaging time resolution chosen for file with resolution: " + f_t_res )
-                continue
             
             # append to frame, so that can later concatenate
-            df_d_temp = frame.append(df_t)
+            df_temp = frame.append(df)
                
     # print all column names
     colnames_list = [item for sublist in colnames_a for item in sublist if item==item] # make sure not nan
@@ -311,9 +277,11 @@ def load_data_EMEP(site, dn, fn_a, t_res):
         
     # concatenate all data frames        
     df_t = pd.concat(frame)
+    
+    # adjust names of columns
     return df_t
 
-def get_data_EMEP(site, dn, t_res):
+def get_data_EMEP(site, dn):
     """Get the daily data for the site
     
     Parameters
@@ -322,19 +290,21 @@ def get_data_EMEP(site, dn, t_res):
          Site code
     dn : string
          Path for EMEP mercury files   
-    t_res: string      
-         Time resolution of the data   
     """
     
     # get the list of filename formats for the site
     fn_a = get_filenames_EMEP(dn, site)
 
     # load data for all years into dataframe
-    df = load_data_EMEP(site, dn, fn_a, t_res)
+    df = load_data_EMEP(site, dn, fn_a)
 
     # sort data by correct time
-    df = df.sort_index()
+    df = df.sort_index().reset_index()
         
+    df = df.rename(columns={"TGM": 'GEM'})
+    df['SiteID'] = site
+    df = df[['SiteID','timeStart','timeEnd','GEM']]
+
     # Check whether have duplicated dates within dataset, remove these
     #df = df.drop_duplicates(subset=['time_mid'])
             
@@ -342,35 +312,31 @@ def get_data_EMEP(site, dn, t_res):
 
 
 #%% Calling functions
-# Names of long-term sites in the EMEP network 
-site_names = ['Auchencorth Moss, UK', 'Lista, Norway', 'Birkenes, Norway',
-              'Zeppelin, Spitsbergen', 'Diabla Gora, Poland', 'Waldhof, Germany',
-              'Schauinsland, Germany', 'Schmucke, Germany', 'Zingst, Germany',
-              'Niembro, Spain', 'Iskrba, Slovenia','Villum (Nord), Greenland',
-              'Lahemaa, Estonia','Chilbolton, UK','Troll, Antarctica', 
-              'Trollhaugen, Antarctica', 'Andoya, Norway']
 
 # Codes for the sites (these aren't the same as EMEP codes)
 site_codes = ['AUC', 'LST','BIR','ZEP', 'DIA', 'WAL', 'SCA', 'SCK', 'ZIN', 'NBO',
-              'ISK','STN','LAH', 'CHI','TRO1', 'TRO2','AND']
-# # Time resolution (coarsest resolution to allow longer time series)
-# site_time_res = ['2W','M','W','D','D','D','D','D','D','D',
-#                   'D','D','D','D','D','D','D']
-# Time resolution (daily, where available)
-site_time_res = ['D','D','D','D','D','D','D','D','D','D',
-                  'D','D','D','D','D','D','D']
-site_names = ['Pallas, Finland', 'Bredkalen, Sweden', 'Rao, Sweden', 'Hallahus/Vavihill, Sweden']
-site_codes = ['PAL','BRE', 'RAO','HAL']
-site_time_res = ['D', 'D','D','D']
+              'ISK','STN','LAH', 'CHI','TRO1', 'TRO2','AND','PAL_IVL','BRE', 'RAO','HAL']
 
 dn = '../../obs_datasets/EMEP/' # directory for EMEP files, change to your path
-do = '../misc_Data/' # directory for outputted daily mean files
+do = 'all_data/' # directory for outputted daily mean files
 
 # run loop over sites to load and process data
 for i in range(len(site_codes)):
-    print("Loading site: " + site_names[i])
+    print("Loading site: " + site_codes[i])
     # get data from sites at desired time resolution
-    df = get_data_EMEP(site_codes[i], dn, site_time_res[i])
+    df = get_data_EMEP(site_codes[i], dn)
     # output csv of daily averages
-    fo = do + site_codes[i] + '_' + site_time_res[i].lower() + '.csv'
-    df.to_csv(fo)
+    fo = do + site_codes[i] + '_all.csv'
+    df.to_csv(fo, index=False)
+    # add plot
+    f,  axes = plt.subplots(1,1, figsize=[18,10],
+                        gridspec_kw=dict(hspace=0.35, wspace=0.35))
+    axes.plot(pd.to_datetime(df.timeStart), df['GEM'], '.', ms=1)
+    axes.set_title(site_codes[i])
+    axes.set_ylabel('GEM (ng m$^{-3}$)')
+    # set limits, for better visualization
+    pct_995 = np.percentile( df['GEM'],99.5)
+    pct_005 = np.percentile( df['GEM'],00.5)
+    axes.set_ylim(top = pct_995, bottom = pct_005)
+    f.savefig('Figures/'+site_codes[i]+'_all.pdf',bbox_inches = 'tight')
+
