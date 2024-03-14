@@ -93,9 +93,8 @@ def get_data_GMOS(site, dn):
 
 
 stations_all = ['NIK','BAR','CAL', 'CMA', 'CST', 'EVK', 'KOD', 'KREGND',
-                'LIS', 'LSM', 'SHL','SIS', 
+                'LIS', 'LSM', 'SHL','SIS', 'MAN',
                 'CPO','LON','MAL','MBA','MIN','MWA','SLU','MCH']
-
 dn = '../../obs_datasets/TGM/GMOS/' # directory for GMOS files, change to your path
 do = 'all_data/' # directory for outputted files
 

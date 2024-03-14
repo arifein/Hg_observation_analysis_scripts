@@ -75,9 +75,10 @@ def get_filenames_EMEP(dn, site):
         fn = [dn + 'daily_data/SE0005R.*.nas']
     elif site=='RAO':
         fn = [dn + 'daily_data/SE0014R.*.nas']
+    elif site=='VAV':
+        fn = [dn + 'daily_data/SE0011R.*.nas']  # Vavihill 2009-2015
     elif site=='HAL':
-        fn = [dn + 'daily_data/SE0011R.*.nas',  # Vavihill 2009-2015
-              dn + 'daily_data/SE0020R.*.nas']  # Hallahus 2016-2021
+        fn = [dn + 'daily_data/SE0020R.*.nas']  # Hallahus 2016-2021
     else:
         fn = ['']
     return fn
@@ -315,7 +316,7 @@ def get_data_EMEP(site, dn):
 
 # Codes for the sites (these aren't the same as EMEP codes)
 site_codes = ['AUC', 'LST','BIR','ZEP', 'DIA', 'WAL', 'SCA', 'SCK', 'ZIN', 'NBO',
-              'ISK','STN','LAH', 'CHI','TRO1', 'TRO2','AND','PAL_IVL','BRE', 'RAO','HAL']
+              'ISK','STN','LAH', 'CHI','TRO1', 'TRO2','AND','PAL_IVL','BRE', 'RAO','HAL','VAV']
 
 dn = '../../obs_datasets/EMEP/' # directory for EMEP files, change to your path
 do = 'all_data/' # directory for outputted daily mean files
